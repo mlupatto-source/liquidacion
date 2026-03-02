@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquidación Marcelo Lupatto</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#1b5e20,#66bb6a);
+    padding:20px;
+    color:#1b5e20;
+}
+h1{
+    text-align:center;
+    color:white;
+}
+.container{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+input,select{
+    width:100%;
+    padding:10px;
+    margin-bottom:12px;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+.green{
+    background:#2e7d32;
+    color:white;
+}
+.gray{
+    background:#616161;
+    color:white;
+}
+.total{
+    font-size:24px;
+    font-weight:bold;
+    color:black;
+    margin-top:10px;
+}
+.section-title{
+    font-weight:bold;
+    margin-top:15px;
+}
+</style>
+</head>
+<body>
+<h1>Marcelo Lupatto<br>Liquidación</h1>
+<div class="container">
+
+<!-- CLIENTE -->
+<h3 class="section-title">Cliente</h3>
+<select id="clienteSeleccionado" onchange="guardarCliente()">
+</select>
+
+<!-- FORMA DE COBRO -->
+<h3 class="section-title">Forma de Cobro</h3>
+<select id="formaSeleccionada" onchange="guardarForma()">
+</select>
+
+<!-- TIPO DE HORA -->
+<h3 class="section-title">Tipo de Hora</h3>
+<select id="tipoHora" onchange="calcular()">
+    <option value="normal">Hora Normal</option>
+    <option value="especial">Hora Especial</option>
+</select>
+
+Valor Hora Normal:
+<input type="number" id="valorHora" oninput="guardarValorHora()" value="14000">
+
+Valor Hora Especial:
+<input type="number" id="valorHoraEsp" oninput="guardarValorHoraEsp()" value="18000">
+
+Valor Kilómetro:
+<input type="number" id="valorKm" oninput="guardarValorKm()" value="600">
+
+Horas:
+<input type="number" id="horas" value="0" oninput="calcular()">
+
+Kilómetros:
+<input type="number" id="km" value="0" oninput="calcular()">
+
+Otros:
+<input type="number" id="otros" value="0" oninput="calcular()">
+
+<div id="total" class="total"></div>
+
+<button class="gray" onclick="reiniciar()">Reiniciar</button>
+<button class="green" onclick="generar()">Compartir por WhatsApp</button>
+<button onclick="generarPDF()">Generar PDF</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+// Datos iniciales de clientes y formas de cobro
+let clientes = JSON.parse(localStorage.getItem('clientes')) || ["Cliente 1","Cliente 2","Cliente 3","Cliente 4","Cliente 5"];
+let formasCobro = JSON.parse(localStorage.getItem('formasCobro')) || ["Efectivo","Alias 1","Alias 2","Alias 3","Alias 4"];
+
+// Cargar select de clientes y forma de cobro
+const clienteSelect = document.getElementById('clienteSeleccionado');
+const formaSelect = document.getElementById('formaSeleccionada');
+
+function cargarSelect(select, datos, claveLocalStorage){
+    select.innerHTML="";
+    datos.forEach((dato, i)=>{
+        let option = document.createElement('option');
+        option.value=dato;
+        option.text=dato;
+        select.appendChild(option);
+    });
+    let ultimo = localStorage.getItem(claveLocalStorage);
+    if(ultimo && datos.includes(ultimo)){
+        select.value=ultimo;
+    }
+}
+
+cargarSelect(clienteSelect, clientes,'clienteSeleccionado');
+cargarSelect(formaSelect, formasCobro,'formaCobroSeleccionada');
+
+function guardarCliente(){
+    localStorage.setItem('clienteSeleccionado', clienteSelect.value);
+}
+
+function guardarForma(){
+    localStorage.setItem('formaCobroSeleccionada', formaSelect.value);
+}
+
+// Valores persistentes
+document.getElementById('valorHora').value = localStorage.getItem('valorHora') || 14000;
+document.getElementById('valorHoraEsp').value = localStorage.getItem('valorHoraEsp') || 18000;
+document.getElementById('valorKm').value = localStorage.getItem('valorKm') || 600;
+
+function guardarValorHora(){
+    localStorage.setItem('valorHora', document.getElementById('valorHora').value);
+    calcular();
+}
+function guardarValorHoraEsp(){
+    localStorage.setItem('valorHoraEsp', document.getElementById('valorHoraEsp').value);
+    calcular();
+}
+function guardarValorKm(){
+    localStorage.setItem('valorKm', document.getElementById('valorKm').value);
+    calcular();
+}
+
+// Formato número
+function formato(n){
+    return new Intl.NumberFormat('es-AR').format(n);
+}
+
+function obtenerValorHora(){
+    let tipo=document.getElementById("tipoHora").value;
+    let normal=parseFloat(document.getElementById("valorHora").value)||0;
+    let esp=parseFloat(document.getElementById("valorHoraEsp").value)||0;
+    return tipo==="normal"?normal:esp;
+}
+
+// Calcular total
+function calcular(){
+    let vh=obtenerValorHora();
+    let vk=parseFloat(document.getElementById("valorKm").value)||0;
+    let h=parseFloat(document.getElementById("horas").value)||0;
+    let k=parseFloat(document.getElementById("km").value)||0;
+    let o=parseFloat(document.getElementById("otros").value)||0;
+    let total=(h*vh)+(k*vk)+o;
+    document.getElementById("total").innerHTML="TOTAL: $"+formato(total);
+    localStorage.setItem('horas', h);
+    localStorage.setItem('km', k);
+    localStorage.setItem('otros', o);
+}
+
+document.getElementById('horas').value = localStorage.getItem('horas') || 0;
+document.getElementById('km').value = localStorage.getItem('km') || 0;
+document.getElementById('otros').value = localStorage.getItem('otros') || 0;
+
+// Reiniciar
+function reiniciar(){
+    document.getElementById("horas").value=0;
+    document.getElementById("km").value=0;
+    document.getElementById("otros").value=0;
+    calcular();
+}
+
+// WhatsApp
+function generar(){
+    let fecha=new Date().toLocaleDateString('es-AR');
+    let h=document.getElementById("horas").value;
+    let k=document.getElementById("km").value;
+    let o=document.getElementById("otros").value;
+    let total=document.getElementById("total").innerText;
+    let cliente = clienteSelect.value;
+    let forma = formaSelect.value;
+
+    let texto=
+`LIQUIDACION ${fecha}
+
+CLIENTE: ${cliente}
+
+HORAS
+Cantidad: ${h}
+
+KILÓMETROS
+Cantidad: ${k}
+
+${total}
+
+FORMA DE PAGO: ${forma.toUpperCase()}
+
+Muchas gracias`;
+
+    navigator.share({text:texto});
+    calcular();
+}
+
+// PDF
+async function generarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const fecha = new Date().toLocaleDateString();
+    const cliente = clienteSelect.value;
+    const horas = document.getElementById("horas").value || "0";
+    const kilometros = document.getElementById("km").value || "0";
+    const total = document.getElementById("total").innerText.replace("TOTAL: $","") || "0";
+    const formaPago = formaSelect.value.toUpperCase();
+
+    // Cargar logo
+    const img = new Image();
+    img.src = "icon.png";
+
+    img.onload = function () {
+
+        // Logo centrado
+        doc.addImage(img, "PNG", 80, 10, 50, 30);
+
+        // Nombre debajo del logo centrado
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("Marcelo Lupatto", 105, 50, { align: "center" });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+
+        doc.text("Fecha: " + fecha, 20, 70);
+        doc.text(cliente, 20, 78);
+
+        doc.text("HORAS", 20, 95);
+        doc.text("Cantidad: " + horas, 25, 103);
+
+        doc.text("KILÓMETROS", 20, 115);
+        doc.text("Cantidad: " + kilometros, 25, 123);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("TOTAL: $" + total, 20, 140);
+
+        doc.setFont("helvetica", "normal");
+        doc.text("FORMA DE PAGO: " + formaPago, 20, 155);
+
+        doc.save("Liquidacion.pdf");
+    };
+}
+
+// Inicial
+calcular();
+</script>
+</body>
+</html>
