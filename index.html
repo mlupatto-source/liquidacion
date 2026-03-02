@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquidación Marcelo Lupatto</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#1b5e20,#66bb6a);
+    padding:20px;
+    color:#1b5e20;
+}
+h1{
+    text-align:center;
+    color:white;
+    font-size:32px;
+}
+h2{
+    text-align:center;
+    color:white;
+    font-size:22px;
+    margin-bottom:10px;
+}
+h3{
+    margin-top:20px;
+}
+.container{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    margin-bottom:20px;
+}
+input,select{
+    width:100%;
+    padding:10px;
+    margin-bottom:12px;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+button{
+    padding:12px;
+    margin:5px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    cursor:pointer;
+}
+.green{
+    background:#2e7d32;
+    color:white;
+}
+.gray{
+    background:#616161;
+    color:white;
+}
+.total{
+    font-size:24px;
+    font-weight:bold;
+    color:black;
+    margin-top:10px;
+}
+.flex-row{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+.block-title{
+    font-weight:bold;
+    font-size:18px;
+    margin-bottom:10px;
+    text-align:center;
+}
+.module{
+    background:#a5d6a7;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+</style>
+</head>
+<body>
+
+<h1>Liquidación</h1>
+<h2>Marcelo Lupatto</h2>
+
+<div class="container">
+
+<!-- Módulo Clientes -->
+<div class="module">
+<div class="block-title">Clientes</div>
+<div class="flex-row">
+    <button class="green" onclick="mostrarCargaCliente()">Carga de Clientes</button>
+    <button class="green" onclick="mostrarSeleccionCliente()">Selección de Cliente</button>
+</div>
+<div id="cargaCliente" style="display:none; margin-top:10px;">
+    <label for="cliente1">Cliente 1</label><input type="text" id="cliente1">
+    <label for="cliente2">Cliente 2</label><input type="text" id="cliente2">
+    <label for="cliente3">Cliente 3</label><input type="text" id="cliente3">
+    <label for="cliente4">Cliente 4</label><input type="text" id="cliente4">
+    <label for="cliente5">Cliente 5</label><input type="text" id="cliente5">
+    <button class="green" onclick="guardarClientes()">Aceptar</button>
+</div>
+<div id="seleccionCliente" style="display:none; margin-top:10px;">
+    <select id="menuClientes"></select>
+    <button class="green" onclick="aceptarCliente()">Aceptar</button>
+</div>
+<p id="clienteSeleccionado" style="font-weight:bold; margin-top:10px;"></p>
+</div>
+
+<!-- Módulo Forma de Cobro -->
+<div class="module">
+<div class="block-title">Forma de Cobro</div>
+<div class="flex-row">
+    <button class="green" onclick="mostrarCargaForma()">Carga de Formas</button>
+    <button class="green" onclick="mostrarSeleccionForma()">Selección de Forma</button>
+</div>
+<div id="cargaForma" style="display:none; margin-top:10px;">
+    <label for="forma1">Forma 1</label><input type="text" id="forma1">
+    <label for="forma2">Forma 2</label><input type="text" id="forma2">
+    <label for="forma3">Forma 3</label><input type="text" id="forma3">
+    <label for="forma4">Forma 4</label><input type="text" id="forma4">
+    <label for="forma5">Forma 5</label><input type="text" id="forma5">
+    <button class="green" onclick="guardarFormas()">Aceptar</button>
+</div>
+<div id="seleccionForma" style="display:none; margin-top:10px;">
+    <select id="menuFormas"></select>
+    <button class="green" onclick="aceptarForma()">Aceptar</button>
+</div>
+<p id="formaSeleccionada" style="font-weight:bold; margin-top:10px;"></p>
+</div>
+
+<!-- Tipo de Hora -->
+<h3>Tipo de Hora</h3>
+<select id="tipoHora" onchange="calcular()">
+    <option value="normal">Hora Normal</option>
+    <option value="especial">Hora Especial</option>
+</select>
+
+Valor Hora Normal:
+<input type="number" id="valorHora" value="14000">
+
+Valor Hora Especial:
+<input type="number" id="valorHoraEsp" value="18000">
+
+Valor Kilómetro:
+<input type="number" id="valorKm" value="600">
+
+Horas:
+<input type="number" id="horas" value="0" oninput="calcular()">
+
+Kilómetros:
+<input type="number" id="km" value="0" oninput="calcular()">
+
+Otros:
+<input type="number" id="otros" value="0" oninput="calcular()">
+
+<div id="total" class="total"></div>
+
+<!-- Botones finales centrados -->
+<div class="flex-row">
+    <button class="gray" onclick="reiniciar()">Reiniciar</button>
+    <button class="green" onclick="generar()">Compartir por WhatsApp</button>
+    <button class="green" onclick="generarPDF()">Generar PDF</button>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+
+// -------- Clientes --------
+function mostrarCargaCliente(){
+    document.getElementById('cargaCliente').style.display='block';
+    document.getElementById('seleccionCliente').style.display='none';
+}
+function mostrarSeleccionCliente(){
+    document.getElementById('cargaCliente').style.display='none';
+    document.getElementById('seleccionCliente').style.display='block';
+    cargarMenuClientes();
+}
+function guardarClientes(){
+    for(let i=1;i<=5;i++){
+        const val=document.getElementById('cliente'+i).value;
+        localStorage.setItem('cliente'+i,val);
+    }
+    document.getElementById('cargaCliente').style.display='none';
+    alert("Clientes guardados");
+}
+function cargarMenuClientes(){
+    const menu=document.getElementById('menuClientes');
+    menu.innerHTML='';
+    for(let i=1;i<=5;i++){
+        const val=localStorage.getItem('cliente'+i)||"";
+        if(val) menu.innerHTML+=`<option value="${val}">${val}</option>`;
+    }
+}
+function aceptarCliente(){
+    const sel=document.getElementById('menuClientes').value;
+    document.getElementById('clienteSeleccionado').innerText="Cliente: "+sel;
+    localStorage.setItem('clienteActual',sel);
+    document.getElementById('seleccionCliente').style.display='none';
+}
+
+// -------- Formas de Cobro --------
+function mostrarCargaForma(){
+    document.getElementById('cargaForma').style.display='block';
+    document.getElementById('seleccionForma').style.display='none';
+}
+function mostrarSeleccionForma(){
+    document.getElementById('cargaForma').style.display='none';
+    document.getElementById('seleccionForma').style.display='block';
+    cargarMenuFormas();
+}
+function guardarFormas(){
+    for(let i=1;i<=5;i++){
+        const val=document.getElementById('forma'+i).value;
+        localStorage.setItem('forma'+i,val);
+    }
+    document.getElementById('cargaForma').style.display='none';
+    alert("Formas de cobro guardadas");
+}
+function cargarMenuFormas(){
+    const menu=document.getElementById('menuFormas');
+    menu.innerHTML='';
+    for(let i=1;i<=5;i++){
+        const val=localStorage.getItem('forma'+i)||"";
+        if(val) menu.innerHTML+=`<option value="${val}">${val}</option>`;
+    }
+}
+function aceptarForma(){
+    const sel=document.getElementById('menuFormas').value;
+    document.getElementById('formaSeleccionada').innerText="Forma de Cobro: "+sel;
+    localStorage.setItem('formaActual',sel);
+    document.getElementById('seleccionForma').style.display='none';
+}
+
+// -------- Guardar y cargar valores --------
+function guardarValor(id){
+    const el=document.getElementById(id);
+    localStorage.setItem(id, el.value);
+}
+function cargarValor(id){
+    const valor=localStorage.getItem(id);
+    if(valor!==null){
+        document.getElementById(id).value=valor;
+    }
+}
+['valorHora','valorHoraEsp','valorKm','horas','km','otros'].forEach(cargarValor);
+
+// -------- Tipo de Hora --------
+function guardarTipoHora(){
+    const tipo = document.getElementById('tipoHora').value;
+    localStorage.setItem('tipoHora', tipo);
+}
+function cargarTipoHora(){
+    const tipo = localStorage.getItem('tipoHora');
+    if(tipo) document.getElementById('tipoHora').value = tipo;
+}
+document.getElementById("tipoHora").addEventListener('change', ()=>{
+    calcular();
+    guardarTipoHora();
+});
+
+// -------- Calcular total --------
+function formato(n){
+    return new Intl.NumberFormat('es-AR').format(n);
+}
+function obtenerValorHora(){
+    let tipo=document.getElementById("tipoHora").value;
+    let normal=parseFloat(document.getElementById("valorHora").value)||0;
+    let esp=parseFloat(document.getElementById("valorHoraEsp").value)||0;
+    return tipo==="normal"?normal:esp;
+}
+function calcular(){
+    let vh=obtenerValorHora();
+    let vk=parseFloat(document.getElementById("valorKm").value)||0;
+    let h=parseFloat(document.getElementById("horas").value)||0;
+    let k=parseFloat(document.getElementById("km").value)||0;
+    let o=parseFloat(document.getElementById("otros").value)||0;
+    let total=(h*vh)+(k*vk)+o;
+    document.getElementById("total").innerHTML="TOTAL: $"+formato(total);
+
+    ['valorHora','valorHoraEsp','valorKm','horas','km','otros'].forEach(guardarValor);
+}
+function reiniciar(){
+    ['horas','km','otros'].forEach(id=>document.getElementById(id).value=0);
+    calcular();
+}
+
+// -------- Compartir por WhatsApp --------
+function generar(){
+    let fecha=new Date().toLocaleDateString('es-AR');
+    let cliente=document.getElementById("clienteSeleccionado").innerText.replace("Cliente: ","");
+    let h=document.getElementById("horas").value;
+    let k=document.getElementById("km").value;
+    let o=document.getElementById("otros").value;
+    let total=document.getElementById("total").innerText;
+    let forma=document.getElementById("formaSeleccionada").innerText.replace("Forma de Cobro: ","");
+
+    let texto=
+`LIQUIDACION ${fecha} - ${cliente}
+
+HORAS
+Cantidad: ${h}
+
+KILÓMETROS
+Cantidad: ${k}
+
+${total}
+
+FORMA DE PAGO: ${forma}
+
+Muchas gracias`;
+
+    navigator.share({text:texto});
+}
+
+// -------- Generar PDF --------
+async function generarPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const fecha = new Date().toLocaleDateString('es-AR');
+    const cliente = document.getElementById("clienteSeleccionado").innerText.replace("Cliente: ","") || "";
+    const horas = document.getElementById("horas").value || "0";
+    const kilometros = document.getElementById("km").value || "0";
+    const total = document.getElementById("total").innerText.replace("TOTAL: $","") || "0";
+    const formaPago = document.getElementById("formaSeleccionada").innerText.replace("Forma de Cobro: ","").toUpperCase();
+
+    const img = new Image();
+    img.src = "icon.png"; // tu ícono de la camioneta
+
+    img.onload = function(){
+        const ancho = 40;
+        const alto = 24;
+        const x = (doc.internal.pageSize.getWidth() - ancho)/2;
+        doc.addImage(img,"PNG", x, 10, ancho, alto);
+        generarContenidoPDF(doc);
+    };
+    img.onerror = function(){
+        generarContenidoPDF(doc);
+    };
+
+    function generarContenidoPDF(doc){
+        let y = 40;
+
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(18);
+        doc.text("Liquidación",105,y,{align:"center"});
+
+        y += 10;
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(14);
+        doc.text("Marcelo Lupatto",105,y,{align:"center"});
+
+        y += 15;
+        doc.setFontSize(12);
+        doc.text("Fecha: "+fecha,105,y,{align:"center"});
+
+        y += 8;
+        doc.text("Cliente: "+cliente,105,y,{align:"center"});
+
+        y += 10;
+        doc.text("HORAS: "+horas,105,y,{align:"center"});
+
+        y += 8;
+        doc.text("KILÓMETROS: "+kilometros,105,y,{align:"center"});
+
+        y += 8;
+        doc.setFont("helvetica","bold");
+        doc.text("TOTAL: $"+total,105,y,{align:"center"});
+
+        y += 10;
+        doc.setFont("helvetica","normal");
+        doc.text("FORMA DE PAGO: "+formaPago,105,y,{align:"center"});
+
+        y += 12;
+        doc.text("Muchas gracias",105,y,{align:"center"});
+
+        doc.save("Liquidacion.pdf");
+    }
+}
+
+// -------- Inicialización --------
+window.addEventListener('load', ()=>{
+    ['valorHora','valorHoraEsp','valorKm','horas','km','otros'].forEach(cargarValor);
+    cargarTipoHora();
+
+    const cAct = localStorage.getItem('clienteActual');
+    if(cAct) document.getElementById('clienteSeleccionado').innerText="Cliente: "+cAct;
+    const fAct = localStorage.getItem('formaActual');
+    if(fAct) document.getElementById('formaSeleccionada').innerText="Forma de Cobro: "+fAct;
+
+    calcular();
+});
+
+</script>
+
+</body>
+</html>
