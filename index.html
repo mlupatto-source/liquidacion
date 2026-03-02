@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquidación Marcelo Lupatto</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#1b5e20,#66bb6a);
+padding:20px;
+color:#1b5e20;
+}
+h1{text-align:center;color:white;}
+.container{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+input,select{
+width:100%;
+padding:10px;
+margin-bottom:12px;
+font-size:16px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+button{
+width:100%;
+padding:12px;
+margin-top:8px;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+}
+.green{background:#2e7d32;color:white;}
+.gray{background:#616161;color:white;}
+.small{font-size:14px;padding:8px;background:#eeeeee;}
+.total{font-size:24px;font-weight:bold;color:black;margin-top:10px;}
+</style>
+</head>
+<body>
+
+<h1>Marcelo Lupatto<br>Liquidación</h1>
+
+<div class="container">
+
+<h3>Cliente</h3>
+<select id="cliente"></select>
+<button class="small" onclick="editarOpciones('cliente')">✏️ Editar Clientes</button>
+
+<h3>Forma de Cobro</h3>
+<select id="formaCobro"></select>
+<button class="small" onclick="editarOpciones('formaCobro')">✏️ Editar Formas de Cobro</button>
+
+<h3>Tipo de Hora</h3>
+<select id="tipoHora" onchange="calcular()">
+<option value="normal">Hora Normal</option>
+<option value="especial">Hora Especial</option>
+</select>
+
+Valor Hora Normal:
+<input type="number" id="valorHora">
+
+Valor Hora Especial:
+<input type="number" id="valorHoraEsp">
+
+Valor Kilómetro:
+<input type="number" id="valorKm">
+
+Horas:
+<input type="number" id="horas" value="0" oninput="calcular()">
+
+Kilómetros:
+<input type="number" id="km" value="0" oninput="calcular()">
+
+Otros:
+<input type="number" id="otros" value="0" oninput="calcular()">
+
+<div id="total" class="total"></div>
+
+<button class="gray" onclick="reiniciar()">Reiniciar</button>
+<button class="green" onclick="generar()">Compartir por WhatsApp</button>
+<button onclick="generarPDF()">Generar PDF</button>
+
+</div>
+
+<script>
+
+const defaults = {
+cliente: ["Opción 1","Opción 2","Opción 3","Opción 4","Opción 5"],
+formaCobro: ["Opción 1","Opción 2","Opción 3","Opción 4","Opción 5"],
+valorHora: 14000,
+valorHoraEsp: 18000,
+valorKm: 600
+};
+
+document.addEventListener("DOMContentLoaded", iniciar);
+
+function iniciar(){
+cargarSelect("cliente");
+cargarSelect("formaCobro");
+
+cargarValor("valorHora");
+cargarValor("valorHoraEsp");
+cargarValor("valorKm");
+
+document.getElementById("valorHora").oninput=guardarValor;
+document.getElementById("valorHoraEsp").oninput=guardarValor;
+document.getElementById("valorKm").oninput=guardarValor;
+
+calcular();
+}
+
+function cargarSelect(id){
+let datos = JSON.parse(localStorage.getItem(id));
+if(!Array.isArray(datos) || datos.length!==5){
+datos = defaults[id];
+localStorage.setItem(id,JSON.stringify(datos));
+}
+let select=document.getElementById(id);
+select.innerHTML="";
+datos.forEach(d=>{
+let opt=document.createElement("option");
+opt.value=d;
+opt.textContent=d;
+select.appendChild(opt);
+});
+let guardado=localStorage.getItem(id+"_sel");
+if(guardado && datos.includes(guardado)){
+select.value=guardado;
+}
+select.onchange=()=>local
